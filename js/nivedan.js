@@ -144,6 +144,9 @@ document.addEventListener("DOMContentLoaded", () => {
         // Vrati Toggles
         setupSectionToggle('input[name="vrati"]', "vratiNotesGroup");
 
+        // Prayer Toggles
+        setupSectionToggle('input[name="prayer"]', "prayerDetailsGroup");
+
         // Default Future Planning Date setup (Tomorrow's Date as default)
         const nextBhaavferiDateInput = document.getElementById("nextBhaavferiDate");
         if (nextBhaavferiDateInput && !nextBhaavferiDateInput.value) {
@@ -299,11 +302,21 @@ document.addEventListener("DOMContentLoaded", () => {
         // Vrati
         setRadioAndGroup("vrati", todayData.vrati, "vratiNotes", todayData.vratiNotes);
 
+        // Prayer
+        setRadioAndGroup("prayer", todayData.prayer, "prayerNotes", todayData.prayerNotes);
+
+            if (todayData.prayerMode) {
+                document.getElementById("prayerMode").value = todayData.prayerMode;
+            }
+
         // Daily Reflection
         if (todayData.dailyReflection) {
             const refl = document.getElementById("dailyReflection");
             if (refl) refl.value = todayData.dailyReflection;
         }
+
+            checkWeeklySelections();
+        checkMonthlySelections();
     }
 
     function setRadioAndGroup(radioName, value, targetInputId, targetValue) {
@@ -333,8 +346,17 @@ document.addEventListener("DOMContentLoaded", () => {
         const meetingVal = getRadioValue("meeting");
         const kendraVal = getRadioValue("kendra");
         const vratiVal = getRadioValue("vrati");
+        const prayerVal = getRadioValue("prayer");
 
-        if (!bhaavferiVal || !readingVal || !pravachanVal || !meetingVal || !kendraVal || !vratiVal) {
+        if (
+          !bhaavferiVal ||
+          !readingVal ||
+          !pravachanVal ||
+          !meetingVal ||
+          !kendraVal ||
+          !vratiVal ||
+          !prayerVal
+           ) {
             showToast("Please answer all required Yes/No activity questions.", "error");
             return;
         }
@@ -345,6 +367,22 @@ document.addEventListener("DOMContentLoaded", () => {
             showToast("Please enter valid hours for Bhaavferi.", "error");
             document.getElementById("bhaavferiHours")?.focus();
             return;
+        }
+
+        if (prayerVal === "yes") {
+
+           const prayerMode = document.getElementById("prayerMode");
+
+           if (!prayerMode.value) {
+
+           showToast("Please select Prayer participation.", "error");
+
+           prayerMode.focus();
+
+           return;
+
+         }
+
         }
 
         // Build Payload
@@ -367,6 +405,9 @@ document.addEventListener("DOMContentLoaded", () => {
             kendraNotes: document.getElementById("kendraNotes")?.value || "",
             vrati: vratiVal,
             vratiNotes: document.getElementById("vratiNotes")?.value || "",
+            prayer: prayerVal,
+            prayerMode:  prayerVal === "yes"  ? document.getElementById("prayerMode")?.value || "" : "",
+            prayerNotes: prayerVal === "yes"  ? document.getElementById("prayerNotes")?.value || "" : "",
             dailyReflection: document.getElementById("dailyReflection")?.value || ""
         };
 
@@ -475,4 +516,108 @@ document.addEventListener("DOMContentLoaded", () => {
             toast.classList.add("hidden");
         }, 4000);
     }
+
+    function checkWeeklySelections() {
+
+    const history = JSON.parse(
+        localStorage.getItem("introspect_nivedan_history") || "{}"
+    );
+
+    const username = Session.getUsername();
+
+    const today = new Date();
+
+const weekStart = new Date(today);
+
+weekStart.setHours(0, 0, 0, 0);
+today.setHours(0, 0, 0, 0);
+
+weekStart.setDate(today.getDate() - today.getDay());
+
+    let pravachanDone = false;
+    let kendraDone = false;
+
+    Object.values(history).forEach(item => {
+        console.log(item.date, item.kendra);
+
+        if (item.user !== username) return;
+
+        const d = new Date(item.date);
+d.setHours(0, 0, 0, 0);
+
+if (d >= weekStart && d <= today) {
+
+    if (item.pravachan === "yes") {
+        pravachanDone = true;
+    }
+
+    if (item.kendra === "yes") {
+        kendraDone = true;
+    }
+
+}
+
+    });
+
+    if (pravachanDone) {
+
+        document.getElementById("pravachanYes").checked = true;
+
+        document.getElementById("pravachanYes").disabled = true;
+        document.getElementById("pravachanNo").disabled = true;
+
+    }
+
+    if (kendraDone) {
+
+        document.getElementById("kendraYes").checked = true;
+
+        document.getElementById("kendraYes").disabled = true;
+        document.getElementById("kendraNo").disabled = true;
+
+    }
+
+}
+
+    function checkMonthlySelections() {
+
+    const history = JSON.parse(
+        localStorage.getItem("introspect_nivedan_history") || "{}"
+    );
+
+    const username = Session.getUsername();
+
+    const today = new Date();
+
+    const month = today.getMonth();
+    const year = today.getFullYear();
+
+    let vratiDone = false;
+
+    Object.values(history).forEach(item => {
+
+        if (item.user !== username) return;
+
+        const d = new Date(item.date);
+
+        if (
+            d.getMonth() === month &&
+            d.getFullYear() === year &&
+            item.vrati === "yes"
+        ) {
+            vratiDone = true;
+        }
+
+    });
+
+    if (vratiDone) {
+
+        document.getElementById("vratiYes").checked = true;
+
+        document.getElementById("vratiYes").disabled = true;
+        document.getElementById("vratiNo").disabled = true;
+
+        }
+
+}
 });

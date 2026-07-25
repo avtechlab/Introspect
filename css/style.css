@@ -98,6 +98,66 @@ var(--bg-secondary)
 
 
 /* =====================
+   Global Form Controls
+===================== */
+
+.form-label,
+.input-group label,
+.reflection-form label,
+#nivedanForm label,
+.input-label {
+    display: block;
+    color: #D8E8FF;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.form-control,
+.input-group input,
+.input-group select,
+.reflection-form textarea,
+.reflection-form select,
+.nivedan-input,
+.nivedan-textarea,
+#bhaavferiHours,
+#reason {
+    width: 100%;
+    padding: 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(56,189,248,0.25);
+    background: rgba(6,20,37,0.8);
+    color: #EDF6FF;
+    outline: none;
+    font-family: 'Poppins', system-ui, sans-serif;
+    font-size: 15px;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.form-control:focus,
+.input-group input:focus,
+.input-group select:focus,
+.reflection-form textarea:focus,
+.reflection-form select:focus,
+.nivedan-input:focus,
+.nivedan-textarea:focus,
+#bhaavferiHours:focus,
+#reason:focus {
+    border-color: #38BDF8;
+    box-shadow: 0 0 12px rgba(56,189,248,0.25);
+}
+
+.form-control::placeholder,
+.input-group input::placeholder,
+.reflection-form textarea::placeholder,
+.nivedan-input::placeholder,
+.nivedan-textarea::placeholder,
+#bhaavferiHours::placeholder,
+#reason::placeholder {
+    color: rgba(175, 196, 221, 0.5);
+}
+
+/* =====================
    Header
 ===================== */
 
@@ -413,7 +473,8 @@ var(--accent-cyan)
 .login-card {
 
 
-    width: 420px;
+    width: 100%;
+    max-width: 420px;
 
 
     background:
@@ -559,92 +620,13 @@ var(--accent-cyan)
 
 
 
-.input-group label {
-
-
-    display:block;
-
-
-    color:
-
-    #D8E8FF;
-
-
-    margin-bottom:
-
-    8px;
-
-
-    font-size:
-
-    14px;
-
-
-}
+/* .input-group label merged into global .form-label */
 
 
 
 
 
-.input-group input {
-
-
-    width:
-
-    100%;
-
-
-    padding:
-
-    14px;
-
-
-    border-radius:
-
-    10px;
-
-
-
-    border:
-
-    1px solid rgba(56,189,248,0.25);
-
-
-
-    background:
-
-    rgba(6,20,37,0.8);
-
-
-
-    color:
-
-    white;
-
-
-    outline:none;
-
-
-}
-
-
-
-
-
-.input-group input:focus {
-
-
-    border-color:
-
-    #38BDF8;
-
-
-    box-shadow:
-
-    0 0 12px rgba(56,189,248,0.25);
-
-
-}
+/* .input-group input merged into .form-control */
 
 
 
@@ -804,68 +786,7 @@ var(--accent-cyan)
 
 
 .input-group select {
-
-
-    width:100%;
-
-
-    padding:14px;
-
-
-    border-radius:10px;
-
-
-    border:
-
-    1px solid rgba(56,189,248,0.25);
-
-
-
-    background:
-
-    rgba(6,20,37,0.8);
-
-
-
-    color:
-
-    #EDF6FF;
-
-
-
-    outline:none;
-
-
-    font-family:
-
-    'Poppins',
-    system-ui,
-    sans-serif;
-
-
-
-    cursor:pointer;
-
-
-}
-
-
-
-
-.input-group select:focus {
-
-
-    border-color:
-
-    #38BDF8;
-
-
-
-    box-shadow:
-
-    0 0 12px rgba(56,189,248,0.25);
-
-
+    cursor: pointer;
 }
 
 
@@ -1487,101 +1408,16 @@ to {
 
 
 .reflection-form label {
-
-    display:block;
-
-    color:#D8E8FF;
-
-    margin-top:20px;
-
-    margin-bottom:8px;
-
+    margin-top: 20px;
 }
-
-
 
 .reflection-form textarea {
-
-
-    width:100%;
-
-
-    padding:15px;
-
-
-    border-radius:12px;
-
-
-    border:
-
-    1px solid rgba(56,189,248,0.25);
-
-
-    background:
-
-    rgba(6,20,37,0.8);
-
-
-    color:#EDF6FF;
-
-
-    font-family:'Poppins', sans-serif;
-
-
-    resize:none;
-
-
-    outline:none;
-
-
+    resize: none;
 }
-
-
-
-.reflection-form textarea:focus {
-
-
-    border-color:#38BDF8;
-
-
-    box-shadow:
-
-    0 0 12px rgba(56,189,248,0.25);
-
-
-}
-
-
-
 
 .reflection-form select {
-
-
-    width:100%;
-
-
-    padding:14px;
-
-
-    margin-bottom:20px;
-
-
-    border-radius:10px;
-
-
-    background:
-
-    rgba(6,20,37,0.8);
-
-
-    color:#EDF6FF;
-
-
-    border:
-
-    1px solid rgba(56,189,248,0.25);
-
-
+    margin-bottom: 20px;
+    cursor: pointer;
 }
 
 
@@ -1699,10 +1535,7 @@ left:0;
     gap: 18px;
 }
 
-#nivedanForm label {
-    color: var(--text-primary);
-    font-weight: 500;
-}
+/* #nivedanForm label merged into .form-label */
 
 .radio-group {
     display: flex;
@@ -1714,24 +1547,10 @@ left:0;
     align-items: center;
     gap: 8px;
     cursor: pointer;
+    padding: 8px 0;
 }
 
-#bhaavferiHours,
-#reason {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid rgba(255,255,255,.12);
-    border-radius: 10px;
-    background: rgba(255,255,255,.05);
-    color: var(--text-primary);
-    font-size: 15px;
-    font-family: inherit;
-}
-
-#bhaavferiHours::placeholder,
-#reason::placeholder {
-    color: rgba(255,255,255,.55);
-}
+/* #bhaavferiHours and #reason merged into .form-control */
 
 .primary-btn {
     width: 220px;
@@ -2148,11 +1967,7 @@ left:0;
     margin-top: 14px;
 }
 
-.input-label {
-    color: #D8E8FF;
-    font-size: 14px;
-    font-weight: 500;
-}
+/* .input-label merged into .form-label */
 
 .required-asterisk {
     color: #EF4444;
@@ -2164,30 +1979,7 @@ left:0;
     font-weight: 400;
 }
 
-.nivedan-input,
-.nivedan-textarea {
-    width: 100%;
-    padding: 13px 16px;
-    border-radius: 10px;
-    background: rgba(6, 20, 37, 0.85);
-    border: 1px solid rgba(56, 189, 248, 0.25);
-    color: #EDF6FF;
-    font-family: 'Poppins', system-ui, sans-serif;
-    font-size: 15px;
-    outline: none;
-    transition: border-color 0.25s ease, box-shadow 0.25s ease;
-}
-
-.nivedan-input:focus,
-.nivedan-textarea:focus {
-    border-color: #38BDF8;
-    box-shadow: 0 0 14px rgba(56, 189, 248, 0.3);
-}
-
-.nivedan-input::placeholder,
-.nivedan-textarea::placeholder {
-    color: rgba(175, 196, 221, 0.5);
-}
+/* .nivedan-input and .nivedan-textarea merged into .form-control */
 
 .date-input::-webkit-calendar-picker-indicator {
     filter: invert(0.8) sepia(100%) saturate(500%) hue-rotate(180deg);
@@ -2341,4 +2133,142 @@ left:0;
         top: 16px;
         justify-content: center;
     }
-}
+}
+
+/* ==========================================
+   RC-2 Progress Dashboard
+========================================== */
+
+.statistics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+    margin-top: 25px;
+}
+
+.stat-card {
+    background: #162544;
+    border: 1px solid #29466f;
+    border-radius: 12px;
+    padding: 20px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,.25);
+}
+
+.stat-card h3 {
+    margin-bottom: 18px;
+    color: #4db8ff;
+    font-size: 20px;
+}
+
+.stat-card p {
+    margin: 10px 0;
+    color: #e8eef7;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+.stat-card span {
+    float: right;
+    font-weight: 700;
+    color: #7dd3fc;
+}
+
+#consistency-weeks {
+    font-size: 42px;
+    color: #38bdf8;
+    margin: 10px 0;
+    text-align: center;
+}
+
+#motivation-message {
+    line-height: 1.7;
+    color: #ffffff;
+}
+
+#growth-percent{
+
+    font-weight:bold;
+
+    color:#5EE173;
+
+}
+
+#last-week,
+#this-week{
+
+    font-weight:bold;
+
+}
+
+#consistency-weeks{
+
+    font-size:48px;
+
+    text-align:center;
+
+}
+.stat-card:last-child {
+    grid-column: 1 / -1;
+}
+
+/* =================================
+   Family Management Module
+================================= */
+
+.family-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.family-section-header h2 {
+    margin-bottom: 5px;
+}
+
+.family-section-header p {
+    color: var(--text-secondary, #AFC4DD);
+    font-size: 14px;
+}
+
+#familyForm,
+#memberForm {
+    width: 100%;
+}
+
+#membersTableBody td,
+#membersTableBody th {
+    padding: 12px 10px;
+    border-bottom: 1px solid rgba(56, 189, 248, 0.12);
+}
+
+#membersTableBody td {
+    color: var(--text-secondary, #AFC4DD);
+}
+
+#membersTableBody th {
+    color: var(--text-primary, #EDF6FF);
+}
+
+.hidden {
+    display: none !important;
+}
+
+@media (max-width: 768px) {
+
+    .form-grid-2col {
+        grid-template-columns: 1fr;
+    }
+
+    .family-section-header {
+        align-items: flex-start;
+    }
+
+}

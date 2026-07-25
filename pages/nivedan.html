@@ -112,13 +112,13 @@
                         </div>
                     </section>
 
-                    <!-- MAIN NIVEDAN FORM (Sections 3 to 10) -->
+                    <!-- MAIN NIVEDAN FORM (Sections 1 to 8) -->
                     <form id="nivedanForm" class="nivedan-form" novalidate>
 
-                        <!-- SECTION 3: Bhaavferi Card -->
+                        <!-- SECTION 1: Bhaavferi Card -->
                         <fieldset class="dashboard-card nivedan-section-card">
                             <legend class="card-title-legend">
-                                <span class="card-icon">🕊️</span> 3. Bhaavferi
+                                <span class="card-icon">🕊️</span> 1. Bhaavferi
                             </legend>
                             <p class="section-instruction">Did you complete today's Bhaavferi?</p>
                             
@@ -177,10 +177,10 @@
                             </div>
                         </fieldset>
 
-                        <!-- SECTION 4: Reading Card -->
+                        <!-- SECTION 2: Reading Card -->
                         <fieldset class="dashboard-card nivedan-section-card">
                             <legend class="card-title-legend">
-                                <span class="card-icon">📚</span> 4. Reading (Swadhyay)
+                                <span class="card-icon">📚</span> 2. Reading (Swadhyay)
                             </legend>
                             <p class="section-instruction">Did you engage in spiritual reading today?</p>
                             
@@ -204,12 +204,12 @@
                             </div>
                         </fieldset>
 
-                        <!-- SECTION 5: Pravachan Card -->
+                        <!-- SECTION 3: Pravachan Card -->
                         <fieldset class="dashboard-card nivedan-section-card">
                             <legend class="card-title-legend">
-                                <span class="card-icon">🛕</span> 5. Pravachan
+                                <span class="card-icon">🛕</span> 3. Pravachan
                             </legend>
-                            <p class="section-instruction">Did you attend or listen to Pravachan today?</p>
+                            <p class="section-instruction">Did you attend or listen to Pravachan this week?</p>
                             
                             <div class="radio-pill-group" role="radiogroup" aria-label="Pravachan Attendance Status">
                                 <label class="radio-pill">
@@ -228,10 +228,10 @@
                             </div>
                         </fieldset>
 
-                        <!-- SECTION 6: Meeting Card -->
+                        <!-- SECTION 4: Meeting Card -->
                         <fieldset class="dashboard-card nivedan-section-card">
                             <legend class="card-title-legend">
-                                <span class="card-icon">👥</span> 6. Meeting
+                                <span class="card-icon">👥</span> 4. Meeting
                             </legend>
                             <p class="section-instruction">Did you participate in Satsang / Group Meeting today?</p>
                             
@@ -252,10 +252,10 @@
                             </div>
                         </fieldset>
 
-                        <!-- SECTION 7: Kendra Card -->
+                        <!-- SECTION 5: Kendra Card -->
                         <fieldset class="dashboard-card nivedan-section-card">
                             <legend class="card-title-legend">
-                                <span class="card-icon">🌱</span> 7. Kendra
+                                <span class="card-icon">🌱</span> 5. Kendra
                             </legend>
                             <p class="section-instruction">Did you attend Kendra activities today?</p>
                             
@@ -276,12 +276,12 @@
                             </div>
                         </fieldset>
 
-                        <!-- SECTION 8: Vrati Card -->
+                        <!-- SECTION 6: Vrati Card -->
                         <fieldset class="dashboard-card nivedan-section-card">
                             <legend class="card-title-legend">
-                                <span class="card-icon">🕉️</span> 8. Vrati
+                                <span class="card-icon">🕉️</span> 6. Vrati
                             </legend>
-                            <p class="section-instruction">Did you observe Vrati / Fasting / Special Observance today?</p>
+                            <p class="section-instruction">Did you attend Vrati in this month?</p>
                             
                             <div class="radio-pill-group" role="radiogroup" aria-label="Vrati Observance Status">
                                 <label class="radio-pill">
@@ -300,10 +300,81 @@
                             </div>
                         </fieldset>
 
-                        <!-- SECTION 9: Daily Reflection Card -->
+                        <!-- SECTION 7: Prayer Card -->
+                            <fieldset class="dashboard-card nivedan-section-card">
+                                <legend class="card-title-legend">
+                                    <span class="card-icon">🙏</span> 7. Prayer (Prarthana)
+                                </legend>
+
+                                <p class="section-instruction">
+                                Did you offer Prayer (Prarthana) today?
+                                </p>
+
+                        <div class="radio-pill-group" role="radiogroup" aria-label="Prayer Status">
+
+        <label class="radio-pill">
+            <input type="radio" name="prayer" value="yes" id="prayerYes" required>
+            <span class="pill-btn">Yes</span>
+        </label>
+
+        <label class="radio-pill">
+            <input type="radio" name="prayer" value="no" id="prayerNo">
+            <span class="pill-btn">No</span>
+        </label>
+
+                        </div>
+
+    <div id="prayerDetailsGroup" class="conditional-field hidden">
+
+        <div class="form-group">
+
+            <label for="prayerMode" class="input-label">
+                Participation
+            </label>
+
+            <select
+                id="prayerMode"
+                name="prayerMode"
+                data-family-mode="true"
+                class="nivedan-input">
+
+                <option value="">Select</option>
+                <option value="single">Single</option>
+                <option value="dampati">Dampati</option>
+                <option value="family">Full Family</option>
+
+            </select>
+
+        </div>
+
+        <div class="form-group">
+
+            <label
+                for="prayerNotes"
+                class="input-label">
+
+                Notes
+                <span class="optional-tag">(Optional)</span>
+
+            </label>
+
+            <textarea
+                id="prayerNotes"
+                name="prayerNotes"
+                rows="3"
+                placeholder="Optional notes..."
+                class="nivedan-textarea"></textarea>
+
+        </div>
+
+    </div>
+
+</fieldset>
+
+                        <!-- SECTION 8: Daily Reflection Card -->
                         <fieldset class="dashboard-card nivedan-section-card">
                             <legend class="card-title-legend">
-                                <span class="card-icon">📝</span> 9. Daily Reflection
+                                <span class="card-icon">📝</span> 8. Daily Reflection
                             </legend>
                             <label for="dailyReflection" class="input-label">
                                 Reflections, Realizations & Gratitude <span class="optional-tag">(Optional)</span>
