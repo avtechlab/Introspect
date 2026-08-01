@@ -19,6 +19,11 @@
     <link rel="stylesheet"
         href="../css/style.css">
 
+    <script src="../js/modules/session.js"></script>
+    <script src="../js/routing.js"></script>
+    <script>
+        AppRouter.protectPage("user");
+    </script>
 </head>
 
 <body>
@@ -478,6 +483,47 @@
 
                             </div>
 
+                            <div class="relationship-section">
+
+                                <h5>Relationships</h5>
+
+                                <div id="relationships-${member.systemId}">
+                                    No relationships added
+                                </div>
+
+                                <button 
+                                    class="btn btn-sm btn-primary"
+                                    onclick="openRelationshipForm('${member.systemId}')">
+                                    Add Relationship
+                                </button>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label
+                                    for="memberParent"
+                                    class="input-label">
+
+                                    Parent / Spouse Link
+
+                                </label>
+
+                                <select
+                                    id="memberParent"
+                                    name="memberParent"
+                                    class="nivedan-input">
+                        
+                                    <option value="">
+                                        Select Relationship Link
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+                            
                         </div>
 
 
@@ -574,6 +620,38 @@
                     </table>
 
                 </div>
+                
+                <!-- RELATIONSHIP INTELLIGENCE -->
+<div
+    id="relationshipIntelligence"
+    style="margin-top:30px;">
+
+    <div class="family-section-header">
+
+        <div>
+
+            <h3>
+                🔗 Family Relationships
+            </h3>
+
+            <p>
+                Parent and child relationships within this family.
+            </p>
+
+        </div>
+
+    </div>
+
+    <div
+        id="relationshipIntelligenceContent">
+
+        <p>
+            No relationship data available yet.
+        </p>
+
+    </div>
+
+</div>
 
             </section>
 
@@ -605,25 +683,119 @@
 </div>
 
 
-<!-- EXISTING CORE MODULES -->
+    <!-- CORE SECURITY -->
 
 <script src="../js/modules/session.js"></script>
-<script src="../js/modules/familyStorage.js"></script>
-<script src="../js/modules/systemIdGenerator.js"></script>
-<script src="../js/modules/memberStorage.js"></script>
 <script src="../js/routing.js"></script>
 
+<script>
+    AppRouter.protectPage("user");
+</script>
 
-<!-- FAMILY CONTROLLER -->
+<!-- CORE STORAGE -->
+
+<script src="../js/modules/familyStorage.js"></script>
+
+<script src="../js/modules/systemIdGenerator.js"></script>
+
+<script src="../js/modules/memberStorage.js"></script>
+
+<script src="../js/modules/relationshipStorage.js"></script>
+
+<!-- BUSINESS ENGINE -->
+
+<script src="../js/modules/relationship.js"></script>
+
+<!-- PAGE CONTROLLER -->
 
 <script src="../js/family.js"></script>
 
 
-<script>
-
-    AppRouter.protectPage("user");
+        <script>
 
 </script>
+
+        <!-- Relationship Modal -->
+
+        <div id="relationshipModal"
+            class="modal"
+            style="display:none;">
+
+            <div class="modal-content">
+
+                <h3>Add Relationship</h3>
+
+
+                <input 
+                    type="hidden"
+                    id="relationshipMemberId">
+
+
+                <label>
+                    Select Member
+                </label>
+
+                <select id="relatedMemberSelect">
+
+                </select>
+
+
+                <label>
+                    Relationship Type
+                </label>
+
+
+                <select id="relationshipType">
+
+                    <option value="">
+                        Select
+                    </option>
+
+                    <option value="SPOUSE">
+                        Spouse
+                    </option>
+
+                    <option value="PARENT">
+                        Parent
+                    </option>
+
+                    <option value="CHILD">
+                        Child
+                    </option>
+
+                    <option value="SIBLING">
+                        Sibling
+                    </option>
+
+                    <option value="OTHER">
+                        Other
+                    </option>
+
+                </select>
+
+
+                <button
+                    type="button"
+                    id="saveRelationshipBtn"
+                    class="primary-btn">
+
+                    Save
+
+                </button>
+
+
+                <button
+                    type="button"
+                    id="closeRelationshipBtn">
+
+                    Cancel
+
+                </button>
+
+
+            </div>
+
+        </div>
 
 </body>
 

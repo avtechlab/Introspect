@@ -137,7 +137,7 @@ window.Session = {
         );
 
         window.location.href =
-            "../pages/login.html";
+            "login.html";
 
     }
 

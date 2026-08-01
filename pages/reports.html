@@ -18,6 +18,11 @@ rel="stylesheet">
 <link rel="stylesheet"
 href="../css/style.css">
 
+<script src="../js/modules/session.js"></script>
+<script src="../js/routing.js"></script>
+<script>
+    AppRouter.protectPage("user");
+</script>
 </head>
 
 <body>
@@ -100,6 +105,10 @@ Progress
 
 <a href="reports.html">
 Reports
+</a>
+
+<a href="family.html">
+Family
 </a>
 
 <a href="settings.html">
@@ -250,17 +259,11 @@ Introspect v0.01 MVP
 
 </div>
 
-<script src="../js/modules/session.js"></script>
-
 <script src="../js/modules/data.js"></script>
-
-<script src="../js/routing.js"></script>
 
 <script src="../js/reports.js"></script>
 
 <script>
-
-AppRouter.protectPage("user");
 
 </script>
 

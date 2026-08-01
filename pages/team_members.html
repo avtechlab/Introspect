@@ -18,6 +18,11 @@ rel="stylesheet">
 <link rel="stylesheet"
 href="../css/style.css">
 
+<script src="../js/modules/session.js"></script>
+<script src="../js/routing.js"></script>
+<script>
+    AppRouter.protectPage("manager");
+</script>
 </head>
 
 <body>
@@ -230,11 +235,11 @@ style="width:100%;border-collapse:collapse;margin-top:20px;">
 <tr>
 
 <th align="left">
-Username
+System ID
 </th>
 
 <th align="left">
-Role
+Name
 </th>
 
 <th align="left">
@@ -279,19 +284,12 @@ Introspect v0.01 MVP
 
 </div>
 
-<script src="../js/modules/session.js"></script>
-
+<script src="../js/modules/memberStorage.js"></script>
 <script src="../js/modules/data.js"></script>
-
 <script src="../js/modules/activity.js"></script>
-
-<script src="../js/routing.js"></script>
-
 <script src="../js/team_members.js"></script>
 
 <script>
-
-AppRouter.protectPage("manager");
 
 </script>
 

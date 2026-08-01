@@ -142,44 +142,34 @@ window.Data = {
 
     getAllProfiles: function () {
 
-        const profiles = [];
+    if (
+        typeof MemberStorage !== "undefined" &&
+        MemberStorage.getAll
+    ) {
 
-        for (let key in localStorage) {
+        return MemberStorage.getAll();
 
-            if (
+    }
 
-                key.startsWith(
-                    "introspect_profile_"
-                )
+    return [];
 
-            ) {
-
-                const profile =
-                    JSON.parse(
-                        localStorage.getItem(key)
-                    );
-
-                if (profile) {
-
-                    profiles.push(profile);
-
-                }
-
-            }
-
-        }
-
-        return profiles;
-
-    },
-
+},
 
 
     getTotalMembers: function () {
 
-        return this.getAllProfiles().length;
+    if (
+        typeof MemberStorage !== "undefined" &&
+        MemberStorage.getAll
+    ) {
 
-    },
+        return MemberStorage.getAll().length;
+
+    }
+
+    return 0;
+
+},
 
 
 
@@ -193,92 +183,93 @@ window.Data = {
 
     getAverageProfileCompletion: function () {
 
-        const profiles =
-            this.getAllProfiles();
+    const profiles =
+        this.getAllProfiles();
 
-        if (profiles.length === 0) {
+    if (profiles.length === 0) {
 
-            return 0;
+        return 0;
 
-        }
+    }
 
-        let total = 0;
+    let total = 0;
 
-        profiles.forEach(function (profile) {
+    profiles.forEach(function (profile) {
 
-            let completed = 0;
+        let completed = 0;
 
-            if (profile.name) completed++;
-            if (profile.email) completed++;
-            if (profile.bio) completed++;
-            if (profile.goals) completed++;
+        if (profile.name) completed++;
+        if (profile.age) completed++;
+        if (profile.gender) completed++;
+        if (profile.relationship) completed++;
 
-            total +=
-                Math.round((completed / 4) * 100);
+        total +=
+            Math.round((completed / 4) * 100);
 
-        });
+    });
 
-        return Math.round(
+    return Math.round(
 
-            total / profiles.length
+        total / profiles.length
 
-        );
+    );
 
-    },
+},
 
 
 
     getMostActiveMember: function () {
 
-        const reflections =
-            this.getAllReflections();
+    const reflections =
+        this.getAllReflections();
 
-        if (reflections.length === 0) {
+    if (reflections.length === 0) {
 
-            return "--";
+        return "--";
 
-        }
+    }
 
-        const counter = {};
+    const counter = {};
 
-        reflections.forEach(function (item) {
+    reflections.forEach(function (item) {
 
-            if (!counter[item.username]) {
+        if (!counter[item.username]) {
 
-                counter[item.username] = 0;
-
-            }
-
-            counter[item.username]++;
-
-        });
-
-        let winner = "--";
-        let highest = 0;
-
-        for (let username in counter) {
-
-            if (
-
-                counter[username] >
-
-                highest
-
-            ) {
-
-                highest =
-                    counter[username];
-
-                winner =
-                    username;
-
-            }
+            counter[item.username] = 0;
 
         }
 
-        return winner;
+        counter[item.username]++;
 
-    },
+    });
+
+    let winner = "--";
+    let highest = 0;
+
+    for (let username in counter) {
+
+        if (counter[username] > highest) {
+
+            highest = counter[username];
+
+            winner = username;
+
+        }
+
+    }
+
+    const member =
+        MemberStorage.get(winner);
+
+    if (member) {
+
+        return member.name;
+
+    }
+
+    return winner;
+
+},
 
 // ===========================
 // NIVEDAN FUNCTIONS

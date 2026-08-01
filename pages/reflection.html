@@ -9,6 +9,11 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/style.css">
+<script src="../js/modules/session.js"></script>
+<script src="../js/routing.js"></script>
+<script>
+    AppRouter.protectPage("user");
+</script>
 </head>
 
 <body>
@@ -41,6 +46,8 @@
             <a href="nivedan.html">Nivedan</a>
             <a href="progress.html">Progress</a>
             <a href="reports.html">Reports</a>
+            <a href="family.html">Family</a>
+
             <a href="settings.html">Settings</a>
 
         </nav>
@@ -97,13 +104,9 @@
 
 </div>
 
-<script src="../js/modules/session.js"></script>
-<script src="../js/routing.js"></script>
 <script src="../js/reflection.js"></script>
 
 <script>
-
-AppRouter.protectPage("user");
 
 document.getElementById("logoutBtn").onclick = function () {
     Session.logout();

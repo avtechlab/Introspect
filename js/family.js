@@ -348,26 +348,33 @@ else {
     // --------------------------------------------------------
 
     const addMemberBtn =
-        document.getElementById("addMemberBtn");
+    document.getElementById("addMemberBtn");
 
-    const memberFormContainer =
-        document.getElementById("memberFormContainer");
+if (addMemberBtn) {
 
+    addMemberBtn.addEventListener(
+        "click",
+        function () {
 
-    if (addMemberBtn && memberFormContainer) {
+            const formContainer =
+                document.getElementById(
+                    "memberFormContainer"
+                );
 
-        addMemberBtn.addEventListener(
-            "click",
-            function () {
+            if (formContainer) {
 
-                memberFormContainer.classList.toggle(
+                formContainer.classList.remove(
                     "hidden"
                 );
 
             }
-        );
 
-    }
+            populateRelationshipMembers();
+
+        }
+    );
+
+}
 
 
     // --------------------------------------------------------
@@ -588,6 +595,7 @@ else {
 
 
     renderMembers(family);
+    renderRelationshipIntelligence();
 
 }
 
@@ -722,10 +730,35 @@ else {
             </td>
 
             <td>
-                ${escapeHtml(
-                    member.relationship || "—"
-                )}
-            </td>
+
+    ${escapeHtml(
+        member.relationship || "—"
+    )}
+
+    <br>
+
+    <button
+        type="button"
+        class="primary-btn relationship-add-btn"
+        data-systemid="${escapeHtml(
+            member.systemId
+        )}"
+        style="margin-top:8px;">
+
+        Add
+
+    </button>
+
+
+    <div
+        id="relationships-${escapeHtml(
+            member.systemId
+        )}"
+        style="margin-top:8px;">
+
+    </div>
+
+</td>
 
             <td>
 
@@ -793,85 +826,364 @@ else {
 
         tbody.appendChild(row);
 
-    });
-
-
-    // ----------------------------------------------------
-    // Edit Button Events
-    // ----------------------------------------------------
-
-    const editButtons =
-        tbody.querySelectorAll(
-            ".family-edit-btn"
-        );
-
-    editButtons.forEach(function (button) {
-
-        button.addEventListener(
-            "click",
-            function () {
-
-                const username =
-                    button.dataset.username;
-
-                editFamilyMember(username);
-
-            }
-        );
+        loadMemberRelationships(member.systemId);
 
     });
 
 
     // ----------------------------------------------------
-    // Status Button Events
+// Edit Button Events
+// ----------------------------------------------------
+
+tbody.querySelectorAll(".family-edit-btn")
+.forEach(function (button) {
+
+    button.onclick = function () {
+
+        editFamilyMember(
+            button.dataset.username
+        );
+
+    };
+
+});
+
+
+// ----------------------------------------------------
+// Status Button Events
+// ----------------------------------------------------
+
+tbody.querySelectorAll(".family-status-btn")
+.forEach(function (button) {
+
+    button.onclick = function () {
+
+        toggleMemberStatus(
+            button.dataset.username
+        );
+
+    };
+
+});
+
+
+// ----------------------------------------------------
+// Head-of-Family Button Events
+// ----------------------------------------------------
+
+tbody.querySelectorAll(".family-head-btn")
+.forEach(function (button) {
+
+    button.onclick = function () {
+
+        setHeadOfFamily(
+            button.dataset.username
+        );
+
+    };
+
+});
+
+
+// ----------------------------------------------------
+// Relationship Button Events
+// ----------------------------------------------------
+
+tbody.querySelectorAll(".relationship-add-btn")
+.forEach(function (button) {
+
+    button.onclick = function () {
+
+        openRelationshipForm(
+            button.dataset.systemid
+        );
+
+    };
+
+});
+
+}
+
+    function openRelationshipForm(memberId) {
+
+    console.log("Opening Relationship Modal :", memberId);
+
+    const modal =
+        document.getElementById(
+            "relationshipModal"
+        );
+
+    if (!modal) {
+
+        console.error(
+            "relationshipModal not found"
+        );
+
+        return;
+
+    }
+
+    document.getElementById(
+        "relationshipMemberId"
+    ).value = memberId;
+
+    loadRelationshipMembers(memberId);
+
+    modal.classList.remove("hidden");
+
+    modal.style.display = "flex";
+
+    modal.style.visibility = "visible";
+
+    modal.style.opacity = "1";
+
+}
+
+    function loadMemberRelationships(memberId){
+
+    const container =
+        document.getElementById(
+            "relationships-" + memberId
+        );
+
+
+    if(!container) return;
+
+
+    const relationships =
+        RelationshipStorage.getMemberRelationships(
+            memberId
+        );
+
+
+    if(!relationships.length){
+
+        container.innerHTML =
+            "";
+
+        return;
+
+    }
+
+
+    container.innerHTML =
+        relationships.map(function(r){
+
+            return `
+            <small>
+            ${r.relationshipType}
+            :
+            ${r.relatedMemberId}
+            </small>
+            `;
+
+        }).join("<br>");
+
+}
+
+    function renderRelationshipIntelligence() {
+
+    const container =
+        document.getElementById(
+            "relationshipIntelligenceContent"
+        );
+
+    if (!container) return;
+
+    const members =
+        FamilyStorage.getFamily(familyId);
+
+    const relationships =
+        RelationshipStorage.getFamilyRelationships(
+            familyId
+        );
+
+    if (!members.length) {
+
+        container.innerHTML = `
+            <p>No family members available.</p>
+        `;
+
+        return;
+
+    }
+
+    if (!relationships.length) {
+
+        container.innerHTML = `
+            <p>No family relationships defined yet.</p>
+        `;
+
+        return;
+
+    }
+
+    let html = "";
+
+    const renderedSpousePairs =
+        new Set();
+
+    // ----------------------------------------------------
+    // Spouse Relationships
     // ----------------------------------------------------
 
-    const statusButtons =
-        tbody.querySelectorAll(
-            ".family-status-btn"
-        );
+    relationships.forEach(function (relationship) {
 
-    statusButtons.forEach(function (button) {
+        if (
+            relationship.relationshipType !==
+            "spouse"
+        ) {
+            return;
+        }
 
-        button.addEventListener(
-            "click",
-            function () {
+        const member =
+            members.find(function (item) {
 
-                const username =
-                    button.dataset.username;
+                return (
+                    item.systemId ===
+                    relationship.memberId
+                );
 
-                toggleMemberStatus(username);
+            });
 
-            }
-        );
+        const spouse =
+            members.find(function (item) {
+
+                return (
+                    item.systemId ===
+                    relationship.relatedMemberId
+                );
+
+            });
+
+        if (!member || !spouse) {
+            return;
+        }
+
+        const pairKey =
+            [
+                member.systemId,
+                spouse.systemId
+            ]
+                .sort()
+                .join("|");
+
+        if (
+            renderedSpousePairs.has(pairKey)
+        ) {
+            return;
+        }
+
+        renderedSpousePairs.add(pairKey);
+
+        html += `
+
+            <div
+                style="
+                    padding:15px;
+                    margin-bottom:12px;
+                    border:1px solid rgba(255,255,255,0.08);
+                    border-radius:10px;
+                ">
+
+                <strong>
+                    ${escapeHtml(member.name)}
+                </strong>
+
+                <span style="margin:0 10px;">
+                    ↔
+                </span>
+
+                <strong>
+                    ${escapeHtml(spouse.name)}
+                </strong>
+
+                <span style="margin-left:10px;">
+                    (Spouse)
+                </span>
+
+            </div>
+
+        `;
 
     });
 
-
     // ----------------------------------------------------
-    // Head-of-Family Button Events
+    // Parent / Child Relationships
     // ----------------------------------------------------
 
-    const headButtons =
-        tbody.querySelectorAll(
-            ".family-head-btn"
-        );
+    relationships.forEach(function (relationship) {
 
-    headButtons.forEach(function (button) {
+        if (
+            relationship.relationshipType !==
+            "child"
+        ) {
+            return;
+        }
 
-        button.addEventListener(
-            "click",
-            function () {
+        const parent =
+            members.find(function (member) {
 
-                const username =
-                    button.dataset.username;
+                return (
+                    member.systemId ===
+                    relationship.relatedMemberId
+                );
 
-                setHeadOfFamily(username);
+            });
 
-            }
-        );
+        const child =
+            members.find(function (member) {
+
+                return (
+                    member.systemId ===
+                    relationship.memberId
+                );
+
+            });
+
+        if (!parent || !child) {
+            return;
+        }
+
+        html += `
+
+            <div
+                style="
+                    padding:15px;
+                    margin-bottom:12px;
+                    border:1px solid rgba(255,255,255,0.08);
+                    border-radius:10px;
+                ">
+
+                <strong>
+                    ${escapeHtml(parent.name)}
+                </strong>
+
+                <span style="margin:0 10px;">
+                    →
+                </span>
+
+                <strong>
+                    ${escapeHtml(child.name)}
+                </strong>
+
+                <span style="margin-left:10px;">
+                    (Child)
+                </span>
+
+            </div>
+
+        `;
 
     });
+
+    container.innerHTML =
+        html ||
+        `
+            <p>
+                No relationships found.
+            </p>
+        `;
 
 }
 
@@ -907,6 +1219,33 @@ else {
         newStatus === "inactive"
             ? "deactivated"
             : "activated";
+
+
+    // ----------------------------------------------------
+    // Relationship Button Events
+    // ----------------------------------------------------
+
+        const relationshipButtons =
+            tbody.querySelectorAll(
+                ".relationship-add-btn"
+            );
+
+
+        relationshipButtons.forEach(function(button){
+
+            button.addEventListener(
+                "click",
+                function(){
+
+                    const systemId =
+                        button.dataset.systemid;
+
+                    openRelationshipForm(systemId);
+
+                }
+            );
+
+        });
 
 
     // ----------------------------------------------------
@@ -1122,6 +1461,9 @@ else {
     const memberRelation =
         document.getElementById("memberRelation");
 
+    const memberParent =
+        document.getElementById("memberParent");
+
     const editingMemberId =
         document.getElementById("editingMemberId");
 
@@ -1155,6 +1497,16 @@ else {
             member.relationship || "";
     }
 
+    if (memberParent) {
+
+        populateRelationshipMembers(
+        member.username
+        );
+
+        memberParent.value =
+            member.parentUsername || "";
+    }
+
 
     if (editingMemberId) {
         editingMemberId.value =
@@ -1178,6 +1530,52 @@ else {
 
 }
 
+    function populateRelationshipMembers(currentUsername = "") {
+
+    const select =
+        document.getElementById("memberParent");
+
+    if (!select) return;
+
+    const members =
+        FamilyStorage.getFamily(familyId);
+
+    select.innerHTML = `
+        <option value="">
+            Select Relationship Link
+        </option>
+    `;
+
+    members.forEach(function (member) {
+
+        if (
+            member.username === currentUsername
+        ) {
+            return;
+        }
+
+        if (
+            member.status &&
+            member.status !== "active"
+        ) {
+            return;
+        }
+
+        const option =
+            document.createElement("option");
+
+        option.value =
+            member.username;
+
+        option.textContent =
+            `${member.name || member.username} (${member.relationship || "Member"})`;
+
+        select.appendChild(option);
+
+    });
+
+}
+
     // --------------------------------------------------------
     // 17. Add Member
     // --------------------------------------------------------
@@ -1195,9 +1593,15 @@ else {
 
     const relationship =
         document.getElementById("memberRelation")?.value.trim();
+    
+    const parentUsername =
+        document.getElementById("memberParent")?.value || "";
 
     const editingMemberId =
         document.getElementById("editingMemberId")?.value.trim();
+
+    const relationshipLink =
+        document.getElementById("memberParent")?.value.trim();
 
 
     // ----------------------------------------------------
@@ -1249,18 +1653,18 @@ else {
 
         const updatedMember = {
 
-            name: name,
+    name: name,
 
-            age:
-                age
-                    ? Number(age)
-                    : "",
+    age:
+        age
+            ? Number(age)
+            : "",
 
-            gender: gender,
+    gender: gender,
 
-            relationship: relationship
+    relationship: relationship
 
-        };
+};
 
 
         // Update MemberStorage
@@ -1277,6 +1681,26 @@ else {
             updatedMember
         );
 
+        RelationshipStorage.removeAllRelationships(
+    editingMemberId
+);
+
+if (relationshipLink) {
+
+    RelationshipStorage.addRelationship({
+
+        familyId: familyId,
+
+        memberId: editingMemberId,
+
+        relatedMemberId: relationshipLink,
+
+        relationshipType:
+            relationship.toLowerCase()
+
+    });
+
+}
 
         // Reset edit state
         const editingInput =
@@ -1335,31 +1759,31 @@ else {
 
     const member = {
 
-        username: systemId,
+    username: systemId,
 
-        systemId: systemId,
+    systemId: systemId,
 
-        name: name,
+    name: name,
 
-        age:
-            age
-                ? Number(age)
-                : "",
+    age:
+        age
+            ? Number(age)
+            : "",
 
-        gender: gender,
+    gender: gender,
 
-        relationship: relationship,
+    relationship: relationship,
 
-        familyId: familyId,
+    familyId: familyId,
 
-        isHead: false,
+    isHead: false,
 
-        status: "active",
+    status: "active",
 
-        createdAt:
-            new Date().toISOString()
+    createdAt:
+        new Date().toISOString()
 
-    };
+};
 
 
     // Save Member Profile
@@ -1372,6 +1796,22 @@ else {
         member
     );
 
+    if (relationshipLink) {
+
+    RelationshipStorage.addRelationship({
+
+        familyId: familyId,
+
+        memberId: systemId,
+
+        relatedMemberId: relationshipLink,
+
+        relationshipType:
+            relationship.toLowerCase()
+
+    });
+
+}
 
     // Reset UI
     resetMemberForm();
@@ -1589,9 +2029,194 @@ else {
 
     }
 
-
+    initRelationshipEvents();
     console.log(
         "family.js loaded successfully"
     );
 
 });
+
+
+function loadMemberRelationships(memberId) {
+
+
+    const relationships =
+        RelationshipStorage.getMemberRelationships(memberId);
+
+
+    const container =
+        document.getElementById(
+            `relationships-${memberId}`
+        );
+
+
+    if(!container) return;
+
+
+    if(relationships.length === 0){
+
+        container.innerHTML =
+        "No relationships added";
+
+        return;
+
+    }
+
+
+    container.innerHTML =
+        relationships.map(r => {
+
+            return `
+            <div>
+            ${r.relationshipType}
+            : ${r.relatedMemberId}
+            </div>
+            `;
+
+        }).join("");
+
+}
+
+function loadRelationshipMembers(currentSystemId) {
+
+    const select =
+        document.getElementById(
+            "relatedMemberSelect"
+        );
+
+    if (!select) return;
+
+    select.innerHTML = "";
+
+    const members =
+        FamilyStorage.getFamily(familyId);
+
+    members.forEach(function (member) {
+
+        if (
+            member.systemId === currentSystemId
+        ) {
+            return;
+        }
+
+        if (
+            member.status &&
+            member.status !== "active"
+        ) {
+            return;
+        }
+
+        const option =
+            document.createElement("option");
+
+        option.value =
+            member.systemId;
+
+        option.textContent =
+            `${member.name} (${member.systemId})`;
+
+        select.appendChild(option);
+
+    });
+
+}
+
+function initRelationshipEvents() {
+
+    const saveBtn =
+        document.getElementById(
+            "saveRelationshipBtn"
+        );
+
+    if (saveBtn) {
+
+        saveBtn.onclick = function () {
+
+            const memberId =
+                document.getElementById(
+                    "relationshipMemberId"
+                ).value;
+
+            const relatedMemberId =
+                document.getElementById(
+                    "relatedMemberSelect"
+                ).value;
+
+            const relationshipType =
+                document.getElementById(
+                    "relationshipType"
+                ).value;
+
+            if (!relatedMemberId) {
+
+                alert(
+                    "Please select related member."
+                );
+
+                return;
+
+            }
+
+            if (!relationshipType) {
+
+                alert(
+                    "Please select relationship."
+                );
+
+                return;
+
+            }
+
+            const result =
+                RelationshipStorage.addRelationship({
+
+                    familyId:
+                        familyId,
+
+                    memberId:
+                        memberId,
+
+                    relatedMemberId:
+                        relatedMemberId,
+
+                    relationshipType:
+                        relationshipType
+
+                });
+
+            if (!result.success) {
+
+                alert(result.message);
+
+                return;
+
+            }
+
+            document.getElementById(
+                "relationshipModal"
+            ).style.display = "none";
+
+            loadFamily();
+
+        };
+
+    }
+
+    const closeBtn =
+        document.getElementById(
+            "closeRelationshipBtn"
+        );
+
+    if (closeBtn) {
+
+        closeBtn.onclick = function () {
+
+            document.getElementById(
+                "relationshipModal"
+            ).style.display = "none";
+
+        };
+
+    }
+
+}

@@ -19,6 +19,11 @@ Introspect - Manager Dashboard
 <link rel="stylesheet" href="../css/style.css">
 
 
+<script src="../js/modules/session.js"></script>
+<script src="../js/routing.js"></script>
+<script>
+    AppRouter.protectPage("manager");
+</script>
 </head>
 
 
@@ -231,19 +236,13 @@ Introspect v0.01 MVP
 
 
 
-<script src="../js/modules/session.js"></script>
-
 <script src="../js/modules/data.js"></script>
 
 <script src="../js/modules/activity.js"></script>
 
-<script src="../js/routing.js"></script>
-
 <script src="../js/manager_dashboard.js"></script>
 
 <script>
-
-AppRouter.protectPage("manager");
 
 </script>
 

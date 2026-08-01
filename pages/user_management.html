@@ -18,6 +18,11 @@ rel="stylesheet">
 <link rel="stylesheet"
 href="../css/style.css">
 
+<script src="../js/modules/session.js"></script>
+<script src="../js/routing.js"></script>
+<script>
+    AppRouter.protectPage("admin");
+</script>
 </head>
 
 
@@ -309,20 +314,14 @@ Introspect v0.01 MVP
 
 
 
-<script src="../js/modules/session.js"></script>
-
 <script src="../js/modules/data.js"></script>
 
 <script src="../js/modules/activity.js"></script>
-
-<script src="../js/routing.js"></script>
 
 <script src="../js/user_management.js"></script>
 
 
 <script>
-
-AppRouter.protectPage("admin");
 
 </script>
 

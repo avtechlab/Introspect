@@ -78,15 +78,15 @@ function loadStatistics() {
 
     cards[0].querySelector("p").innerText =
         "Total Reflections : " +
-        Data.getReflectionCount();
+        Data.getTotalReflections();
 
     cards[1].querySelector("p").innerText =
-        "Current User : " +
-        Session.getUsername();
+        "Most Active Member : " +
+        Data.getMostActiveMember();
 
     cards[2].querySelector("p").innerText =
-        "Profile Completion : " +
-        Data.getProfileCompletion() +
+        "Average Completion : " +
+        Data.getAverageProfileCompletion() +
         "%";
 
 }

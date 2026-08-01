@@ -13,6 +13,11 @@
     
     <!-- App Stylesheet -->
     <link rel="stylesheet" href="../css/style.css">
+    <script src="../js/modules/session.js"></script>
+    <script src="../js/routing.js"></script>
+    <script>
+        AppRouter.protectPage("user");
+    </script>
 </head>
 
 <body>
@@ -47,6 +52,8 @@
                     <a href="nivedan.html" class="active" aria-current="page">Nivedan</a>
                     <a href="progress.html">Progress</a>
                     <a href="reports.html">Reports</a>
+                    <a href="family.html">Family</a>
+
                     <a href="settings.html">Settings</a>
                 </nav>
             </aside>
@@ -403,12 +410,9 @@
     </div>
 
     <!-- Scripts -->
-    <script src="../js/modules/session.js"></script>
-    <script src="../js/routing.js"></script>
     <script src="../js/modules/nivedanStorage.js"></script>
     <script src="../js/nivedan.js"></script>
     <script>
-        AppRouter.protectPage("user");
     </script>
 </body>
 

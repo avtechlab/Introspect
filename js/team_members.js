@@ -70,27 +70,10 @@ function bindLogout() {
 function loadStatistics() {
 
     const reflections =
-        JSON.parse(
-            localStorage.getItem("introspect_reflections")
-        ) || [];
+    Data.getAllReflections();
 
-    const profiles = [];
-
-    for (let key in localStorage) {
-
-        if (key.startsWith("introspect_profile_")) {
-
-            profiles.push(
-
-                JSON.parse(
-                    localStorage.getItem(key)
-                )
-
-            );
-
-        }
-
-    }
+    const profiles =
+    MemberStorage.getAll();
 
     document.getElementById("totalMembers").innerText =
         profiles.length;
@@ -147,32 +130,19 @@ function loadMembers() {
     body.innerHTML = "";
 
     const reflections =
-        JSON.parse(
-            localStorage.getItem("introspect_reflections")
-        ) || [];
+        Data.getAllReflections();
 
-    for (let key in localStorage) {
+    const profiles =
+        MemberStorage.getAll();
 
-        if (!key.startsWith("introspect_profile_")) {
-
-            continue;
-
-        }
-
-        const profile =
-            JSON.parse(
-                localStorage.getItem(key)
-            );
+    profiles.forEach(function (profile) {
 
         let completed = 0;
 
         if (profile.name) completed++;
-
-        if (profile.email) completed++;
-
-        if (profile.bio) completed++;
-
-        if (profile.goals) completed++;
+        if (profile.age) completed++;
+        if (profile.gender) completed++;
+        if (profile.relationship) completed++;
 
         const completion =
             Math.round((completed / 4) * 100);
@@ -189,21 +159,21 @@ function loadMembers() {
 
 <tr>
 
-<td>${profile.username}</td>
+<td>${profile.systemId || profile.username}</td>
 
-<td>${profile.role}</td>
+<td>${profile.name || "-"}</td>
 
 <td>${reflectionCount}</td>
 
 <td>${completion}%</td>
 
-<td>Active</td>
+<td>${profile.status || "active"}</td>
 
 </tr>
 
 `;
 
-    }
+    });
 
 }
 
