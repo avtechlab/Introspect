@@ -228,89 +228,7 @@ if (!currentMember.systemId) {
     // 9. Ensure Current User Exists In Family
     // --------------------------------------------------------
 
-let familyMembers =
-    FamilyStorage.getFamily(familyId);
-
-
-const currentUserInFamily =
-    familyMembers.some(function (member) {
-
-        return member.username === username;
-
-    });
-
-
-if (!currentUserInFamily) {
-
-    const existingHead =
-        FamilyStorage.getHeadOfFamily(familyId);
-
-
-    const shouldBeHead =
-        !existingHead;
-
-
-    MemberStorage.update(
-        username,
-        {
-            familyId: familyId,
-            isHead: shouldBeHead
-        }
-    );
-
-
-    FamilyStorage.addMember(
-        familyId,
-        {
-            username: username,
-
-            systemId:
-                currentMember.systemId,
-
-            name:
-                currentMember.name ||
-                username,
-
-            relationship:
-                currentMember.relationship ||
-                "Head",
-
-            isHead:
-                shouldBeHead,
-
-            status:
-                currentMember.status ||
-                "active",
-
-            familyId:
-                familyId,
-
-            joinedAt:
-                new Date().toISOString()
-
-        }
-    );
-
-}
-else {
-
-    /*
-     * Existing family record may have been created
-     * before System ID normalization.
-     *
-     * Synchronize the permanent System ID.
-     */
-
-    FamilyStorage.updateMember(
-        familyId,
-        username,
-        {
-            systemId:
-                currentMember.systemId
-        }
-    );
-
-}
+    FamilyService.ensureCurrentUserInFamily(familyId, username, currentMember);
 
     // --------------------------------------------------------
     // 10. Load Family
@@ -905,387 +823,241 @@ tbody.querySelectorAll(".relationship-add-btn")
 }
 
     function openRelationshipForm(memberId) {
+        console.log("Opening Relationship Modal :", memberId);
+        const modal = document.getElementById("relationshipModal");
+        if (!modal) {
+            console.error("relationshipModal not found");
+            return;
+        }
+        document.getElementById("relationshipMemberId").value = memberId;
+        loadRelationshipMembers(memberId);
 
-    console.log("Opening Relationship Modal :", memberId);
+        const relatedSelect = document.getElementById("relatedMemberSelect");
+        if (relatedSelect) {
+            relatedSelect.onchange = function() {
+                loadRelationshipTypes(memberId, relatedSelect.value);
+            };
+            loadRelationshipTypes(memberId, relatedSelect.value);
+        }
 
-    const modal =
-        document.getElementById(
-            "relationshipModal"
-        );
-
-    if (!modal) {
-
-        console.error(
-            "relationshipModal not found"
-        );
-
-        return;
-
+        modal.classList.remove("hidden");
+        modal.style.display = "flex";
+        modal.style.visibility = "visible";
+        modal.style.opacity = "1";
     }
 
-    document.getElementById(
-        "relationshipMemberId"
-    ).value = memberId;
+    function loadRelationshipTypes(memberId, relatedMemberId) {
+        const select = document.getElementById("relationshipType");
+        if (!select) return;
+        select.innerHTML = "";
 
-    loadRelationshipMembers(memberId);
+        // 1. If same member, do not show anything
+        if (!memberId || !relatedMemberId || memberId === relatedMemberId) {
+            return;
+        }
 
-    modal.classList.remove("hidden");
+        const allTypes = [
+            { value: "spouse", text: "Spouse" },
+            { value: "father", text: "Father" },
+            { value: "mother", text: "Mother" },
+            { value: "son", text: "Son" },
+            { value: "daughter", text: "Daughter" },
+            { value: "brother", text: "Brother" },
+            { value: "sister", text: "Sister" },
+            { value: "grandfather", text: "Grandfather" },
+            { value: "grandmother", text: "Grandmother" },
+            { value: "grandson", text: "Grandson" },
+            { value: "granddaughter", text: "Granddaughter" },
+            { value: "uncle", text: "Uncle" },
+            { value: "aunt", text: "Aunt" },
+            { value: "nephew", text: "Nephew" },
+            { value: "niece", text: "Niece" }
+        ];
 
-    modal.style.display = "flex";
+        allTypes.forEach(type => {
+            const rule = RelationshipStorage.relationshipMap[type.value];
+            if (rule && !rule.allowMultiple) {
+                const hasExistingSource = RelationshipStorage.load().some(r => r.memberId === memberId && r.relationshipType === type.value);
+                const hasExistingTarget = RelationshipStorage.load().some(r => r.memberId === relatedMemberId && r.relationshipType === type.value);
+                if (hasExistingSource || hasExistingTarget) return;
+            }
 
-    modal.style.visibility = "visible";
-
-    modal.style.opacity = "1";
-
-}
-
-    function loadMemberRelationships(memberId){
-
-    const container =
-        document.getElementById(
-            "relationships-" + memberId
-        );
-
-
-    if(!container) return;
-
-
-    const relationships =
-        RelationshipStorage.getMemberRelationships(
-            memberId
-        );
-
-
-    if(!relationships.length){
-
-        container.innerHTML =
-            "";
-
-        return;
-
+            const option = document.createElement("option");
+            option.value = type.value;
+            option.textContent = type.text;
+            select.appendChild(option);
+        });
     }
-
-
-    container.innerHTML =
-        relationships.map(function(r){
-
-            return `
-            <small>
-            ${r.relationshipType}
-            :
-            ${r.relatedMemberId}
-            </small>
-            `;
-
-        }).join("<br>");
-
-}
 
     function renderRelationshipIntelligence() {
+        const container = document.getElementById("relationshipIntelligenceContent");
+        if (!container) return;
 
-    const container =
-        document.getElementById(
-            "relationshipIntelligenceContent"
-        );
+        const members = FamilyStorage.getFamily(familyId);
+        const relationships = RelationshipStorage.getFamilyRelationships(familyId);
 
-    if (!container) return;
-
-    const members =
-        FamilyStorage.getFamily(familyId);
-
-    const relationships =
-        RelationshipStorage.getFamilyRelationships(
-            familyId
-        );
-
-    if (!members.length) {
-
-        container.innerHTML = `
-            <p>No family members available.</p>
-        `;
-
-        return;
-
-    }
-
-    if (!relationships.length) {
-
-        container.innerHTML = `
-            <p>No family relationships defined yet.</p>
-        `;
-
-        return;
-
-    }
-
-    let html = "";
-
-    const renderedSpousePairs =
-        new Set();
-
-    // ----------------------------------------------------
-    // Spouse Relationships
-    // ----------------------------------------------------
-
-    relationships.forEach(function (relationship) {
-
-        if (
-            relationship.relationshipType !==
-            "spouse"
-        ) {
+        if (!members.length) {
+            container.innerHTML = `<p>No family members available.</p>`;
             return;
         }
 
-        const member =
-            members.find(function (item) {
-
-                return (
-                    item.systemId ===
-                    relationship.memberId
-                );
-
-            });
-
-        const spouse =
-            members.find(function (item) {
-
-                return (
-                    item.systemId ===
-                    relationship.relatedMemberId
-                );
-
-            });
-
-        if (!member || !spouse) {
+        if (!relationships.length) {
+            container.innerHTML = `<p>No family relationships defined yet.</p>`;
             return;
         }
 
-        const pairKey =
-            [
-                member.systemId,
-                spouse.systemId
-            ]
-                .sort()
-                .join("|");
+        let html = "";
+        const renderedSpousePairs = new Set();
+        const renderedChildPairs = new Set();
+        const renderedSiblingPairs = new Set();
+        const renderedExtendedPairs = new Set();
 
-        if (
-            renderedSpousePairs.has(pairKey)
-        ) {
-            return;
-        }
+        // ----------------------------------------------------
+        // Spouse Relationships
+        // ----------------------------------------------------
+        relationships.forEach(function (relationship) {
+            const rule = RelationshipStorage.relationshipMap[relationship.relationshipType];
+            if (!rule || rule.category !== "spouse") return;
 
-        renderedSpousePairs.add(pairKey);
+            const member = members.find(m => m.systemId === relationship.memberId);
+            const spouse = members.find(m => m.systemId === relationship.relatedMemberId);
+            if (!member || !spouse) return;
 
-        html += `
+            const pairKey = [member.systemId, spouse.systemId].sort().join("|");
+            if (renderedSpousePairs.has(pairKey)) return;
+            renderedSpousePairs.add(pairKey);
 
-            <div
-                style="
-                    padding:15px;
-                    margin-bottom:12px;
-                    border:1px solid rgba(255,255,255,0.08);
-                    border-radius:10px;
-                ">
-
-                <strong>
-                    ${escapeHtml(member.name)}
-                </strong>
-
-                <span style="margin:0 10px;">
-                    ↔
-                </span>
-
-                <strong>
-                    ${escapeHtml(spouse.name)}
-                </strong>
-
-                <span style="margin-left:10px;">
-                    (Spouse)
-                </span>
-
-            </div>
-
-        `;
-
-    });
-
-    // ----------------------------------------------------
-    // Parent / Child Relationships
-    // ----------------------------------------------------
-
-    relationships.forEach(function (relationship) {
-
-        if (
-            relationship.relationshipType !==
-            "child"
-        ) {
-            return;
-        }
-
-        const parent =
-            members.find(function (member) {
-
-                return (
-                    member.systemId ===
-                    relationship.relatedMemberId
-                );
-
-            });
-
-        const child =
-            members.find(function (member) {
-
-                return (
-                    member.systemId ===
-                    relationship.memberId
-                );
-
-            });
-
-        if (!parent || !child) {
-            return;
-        }
-
-        html += `
-
-            <div
-                style="
-                    padding:15px;
-                    margin-bottom:12px;
-                    border:1px solid rgba(255,255,255,0.08);
-                    border-radius:10px;
-                ">
-
-                <strong>
-                    ${escapeHtml(parent.name)}
-                </strong>
-
-                <span style="margin:0 10px;">
-                    →
-                </span>
-
-                <strong>
-                    ${escapeHtml(child.name)}
-                </strong>
-
-                <span style="margin-left:10px;">
-                    (Child)
-                </span>
-
-            </div>
-
-        `;
-
-    });
-
-    container.innerHTML =
-        html ||
-        `
-            <p>
-                No relationships found.
-            </p>
-        `;
-
-}
-
-    function toggleMemberStatus(username) {
-
-    const member =
-        MemberStorage.get(username);
-
-
-    if (!member) {
-
-        showMessage(
-            "Member record not found.",
-            "error"
-        );
-
-        return;
-
-    }
-
-
-    const currentStatus =
-        member.status || "active";
-
-
-    const newStatus =
-        currentStatus === "active"
-            ? "inactive"
-            : "active";
-
-
-    const actionText =
-        newStatus === "inactive"
-            ? "deactivated"
-            : "activated";
-
-
-    // ----------------------------------------------------
-    // Relationship Button Events
-    // ----------------------------------------------------
-
-        const relationshipButtons =
-            tbody.querySelectorAll(
-                ".relationship-add-btn"
-            );
-
-
-        relationshipButtons.forEach(function(button){
-
-            button.addEventListener(
-                "click",
-                function(){
-
-                    const systemId =
-                        button.dataset.systemid;
-
-                    openRelationshipForm(systemId);
-
-                }
-            );
-
+            html += `
+                <div style="padding:15px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.08); border-radius:10px;">
+                    <strong>${escapeHtml(member.name)}</strong>
+                    <span style="margin:0 10px;">↔</span>
+                    <strong>${escapeHtml(spouse.name)}</strong>
+                    <span style="margin-left:10px;">(Spouse)</span>
+                </div>
+            `;
         });
 
+        // ----------------------------------------------------
+        // Parent / Child Relationships
+        // ----------------------------------------------------
+        relationships.forEach(function (relationship) {
+            const rule = RelationshipStorage.relationshipMap[relationship.relationshipType];
+            if (!rule || (rule.category !== "child" && rule.category !== "parent")) return;
 
-    // ----------------------------------------------------
-    // Update MemberStorage
-    // ----------------------------------------------------
+            // Normalize visually: parent to child
+            const isChild = rule.category === "child";
+            const parent = members.find(m => m.systemId === (isChild ? relationship.relatedMemberId : relationship.memberId));
+            const child = members.find(m => m.systemId === (isChild ? relationship.memberId : relationship.relatedMemberId));
+            if (!parent || !child) return;
 
-    MemberStorage.update(
-        username,
-        {
-            status: newStatus
+            const pairKey = [parent.systemId, child.systemId].join("|");
+            if (renderedChildPairs.has(pairKey)) return;
+            renderedChildPairs.add(pairKey);
+
+            const relLabel = relationship.relationshipType.charAt(0).toUpperCase() + relationship.relationshipType.slice(1);
+
+            html += `
+                <div style="padding:15px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.08); border-radius:10px;">
+                    <strong>${escapeHtml(parent.name)}</strong>
+                    <span style="margin:0 10px;">→</span>
+                    <strong>${escapeHtml(child.name)}</strong>
+                    <span style="margin-left:10px;">(${relLabel})</span>
+                </div>
+            `;
+        });
+
+        // ----------------------------------------------------
+        // Sibling Relationships
+        // ----------------------------------------------------
+        relationships.forEach(function (relationship) {
+            const rule = RelationshipStorage.relationshipMap[relationship.relationshipType];
+            if (!rule || rule.category !== "sibling") return;
+
+            const member = members.find(m => m.systemId === relationship.memberId);
+            const sibling = members.find(m => m.systemId === relationship.relatedMemberId);
+            if (!member || !sibling) return;
+
+            const pairKey = [member.systemId, sibling.systemId].sort().join("|");
+            if (renderedSiblingPairs.has(pairKey)) return;
+            renderedSiblingPairs.add(pairKey);
+
+            const relLabel = relationship.relationshipType.charAt(0).toUpperCase() + relationship.relationshipType.slice(1);
+
+            html += `
+                <div style="padding:15px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.08); border-radius:10px;">
+                    <strong>${escapeHtml(member.name)}</strong>
+                    <span style="margin:0 10px;">↔</span>
+                    <strong>${escapeHtml(sibling.name)}</strong>
+                    <span style="margin-left:10px;">(${relLabel})</span>
+                </div>
+            `;
+        });
+
+        // ----------------------------------------------------
+        // Extended Relationships (Grandparents, Uncles/Aunts, Nephews/Nieces)
+        // ----------------------------------------------------
+        relationships.forEach(function (relationship) {
+            const rule = RelationshipStorage.relationshipMap[relationship.relationshipType];
+            if (!rule || rule.category !== "extended") return;
+
+            const member = members.find(m => m.systemId === relationship.memberId);
+            const related = members.find(m => m.systemId === relationship.relatedMemberId);
+            if (!member || !related) return;
+
+            const pairKey = [member.systemId, related.systemId].sort().join("|");
+            if (renderedExtendedPairs.has(pairKey)) return;
+            renderedExtendedPairs.add(pairKey);
+
+            const relLabel = relationship.relationshipType.charAt(0).toUpperCase() + relationship.relationshipType.slice(1);
+
+            html += `
+                <div style="padding:15px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.08); border-radius:10px;">
+                    <strong>${escapeHtml(member.name)}</strong>
+                    <span style="margin:0 10px;">→</span>
+                    <strong>${escapeHtml(related.name)}</strong>
+                    <span style="margin-left:10px;">(${relLabel})</span>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html || `<p>No relationships found.</p>`;
+    }
+
+    function toggleMemberStatus(username) {
+        const member = MemberStorage.get(username);
+        if (!member) {
+            showMessage(
+                "Member record not found.",
+                "error"
+            );
+            return;
         }
-    );
 
+        const currentStatus = member.status || "active";
+        const newStatus = currentStatus === "active" ? "inactive" : "active";
+        const actionText = newStatus === "inactive" ? "deactivated" : "activated";
 
-    // ----------------------------------------------------
-    // Update FamilyStorage
-    // ----------------------------------------------------
-
-    FamilyStorage.updateMember(
-        familyId,
-        username,
-        {
-            status: newStatus
+        // Deactivation constraint: Cannot deactivate the Head of Family
+        if (newStatus === "inactive" && member.isHead === true) {
+            showMessage(
+                "Cannot deactivate the Head of Family. Assign another head first.",
+                "error"
+            );
+            return;
         }
-    );
 
+        FamilyService.updateMemberStatus(familyId, username, newStatus);
 
-    // ----------------------------------------------------
-    // Refresh Family UI
-    // ----------------------------------------------------
+        // ----------------------------------------------------
+        // Refresh Family UI
+        // ----------------------------------------------------
+        loadFamily();
 
-    loadFamily();
-
-
-    showMessage(
-        `${username} ${actionText} successfully.`,
-        "success"
-    );
-
-}
+        showMessage(
+            `${username} ${actionText} successfully.`,
+            "success"
+        );
+    }
 
     function setHeadOfFamily(username) {
 
@@ -1340,81 +1112,16 @@ tbody.querySelectorAll(".relationship-add-btn")
     }
 
 
-    // ----------------------------------------------------
-    // IMPORTANT:
-    // MemberStorage is the source of truth.
-    //
-    // First remove Head designation from all
-    // family members.
-    // ----------------------------------------------------
+    const result =
+        FamilyService.setHeadOfFamily(familyId, username);
 
-    familyMembers.forEach(function (member) {
-
-        const memberUsername =
-            member.username;
-
-        if (memberUsername === username) {
-
-            return;
-
-        }
-
-
-        const memberRecord =
-            MemberStorage.get(memberUsername);
-
-
-        if (
-            memberRecord &&
-            memberRecord.isHead === true
-        ) {
-
-            MemberStorage.update(
-                memberUsername,
-                {
-                    isHead: false
-                }
-            );
-
-        }
-
-
-        // Keep FamilyStorage synchronized
-
-        FamilyStorage.updateMember(
-            familyId,
-            memberUsername,
-            {
-                isHead: false
-            }
+    if (result && result.success === false) {
+        showMessage(
+            result.message,
+            "error"
         );
-
-    });
-
-
-    // ----------------------------------------------------
-    // Set New Head
-    // ----------------------------------------------------
-
-    MemberStorage.update(
-        username,
-        {
-            isHead: true
-        }
-    );
-
-
-    // ----------------------------------------------------
-    // Keep FamilyStorage synchronized
-    // ----------------------------------------------------
-
-    FamilyStorage.updateMember(
-        familyId,
-        username,
-        {
-            isHead: true
-        }
-    );
+        return;
+    }
 
 
     // ----------------------------------------------------
@@ -1667,40 +1374,11 @@ tbody.querySelectorAll(".relationship-add-btn")
 };
 
 
-        // Update MemberStorage
-        MemberStorage.update(
-            editingMemberId,
-            updatedMember
-        );
-
-
-        // Update FamilyStorage
-        FamilyStorage.updateMember(
+        FamilyService.updateMemberProfile(
             familyId,
             editingMemberId,
             updatedMember
         );
-
-        RelationshipStorage.removeAllRelationships(
-    editingMemberId
-);
-
-if (relationshipLink) {
-
-    RelationshipStorage.addRelationship({
-
-        familyId: familyId,
-
-        memberId: editingMemberId,
-
-        relatedMemberId: relationshipLink,
-
-        relationshipType:
-            relationship.toLowerCase()
-
-    });
-
-}
 
         // Reset edit state
         const editingInput =
@@ -1786,32 +1464,25 @@ if (relationshipLink) {
 };
 
 
-    // Save Member Profile
-    MemberStorage.add(member);
-
-
-    // Add Member to Family
-    FamilyStorage.addMember(
-        familyId,
-        member
-    );
+    FamilyService.addMember(familyId, member);
 
     if (relationshipLink) {
 
-    RelationshipStorage.addRelationship({
+        const relResult = RelationshipStorage.addRelationship({
+            familyId: familyId,
+            memberId: systemId,
+            relatedMemberId: relationshipLink,
+            relationshipType: relationship.toLowerCase()
+        });
 
-        familyId: familyId,
+        if (relResult && !relResult.success) {
+            showMessage(
+                relResult.message,
+                "error"
+            );
+        }
 
-        memberId: systemId,
-
-        relatedMemberId: relationshipLink,
-
-        relationshipType:
-            relationship.toLowerCase()
-
-    });
-
-}
+    }
 
     // Reset UI
     resetMemberForm();
@@ -1835,7 +1506,7 @@ if (relationshipLink) {
 
 
     showMessage(
-        `${systemId} added successfully.`,
+        `${name} added successfully.`,
         "success"
     );
 
@@ -2039,41 +1710,108 @@ if (relationshipLink) {
 
 function loadMemberRelationships(memberId) {
 
-
-    const relationships =
-        RelationshipStorage.getMemberRelationships(memberId);
-
-
     const container =
         document.getElementById(
             `relationships-${memberId}`
         );
 
-
-    if(!container) return;
-
-
-    if(relationships.length === 0){
-
-        container.innerHTML =
-        "No relationships added";
+    if (!container) {
 
         return;
 
     }
 
+    const relationships =
+    RelationshipStorage
+        .getRelationships()
+        .filter(function (relationship) {
 
-    container.innerHTML =
-        relationships.map(r => {
+            return (
+                relationship.memberId === memberId
+            );
 
-            return `
-            <div>
-            ${r.relationshipType}
-            : ${r.relatedMemberId}
+        });
+
+    if (!relationships.length) {
+
+        container.innerHTML = `
+            <span
+                style="
+                    color:#888;
+                    font-size:12px;
+                ">
+                No Relationships
+            </span>
+        `;
+
+        return;
+
+    }
+
+    const members =
+        MemberStorage.getAll();
+
+    let html = "";
+
+    relationships.forEach(function (relationship) {
+
+        let otherMemberId = "";
+
+        if (
+            relationship.memberId === memberId
+        ) {
+
+            otherMemberId =
+                relationship.relatedMemberId;
+
+        } else {
+
+            otherMemberId =
+                relationship.memberId;
+
+        }
+
+        const otherMember =
+            members.find(function (member) {
+
+                return (
+                    member.systemId ===
+                    otherMemberId
+                );
+
+            });
+
+        if (!otherMember) {
+
+            return;
+
+        }
+
+        html += `
+
+            <div
+                style="
+                    font-size:12px;
+                    margin-top:4px;
+                ">
+
+                <strong>
+
+                    ${relationship.relationshipType}
+
+                </strong>
+
+                :
+
+                ${otherMember.name}
+
             </div>
-            `;
 
-        }).join("");
+        `;
+
+    });
+
+    container.innerHTML = html;
 
 }
 
@@ -2088,22 +1826,51 @@ function loadRelationshipMembers(currentSystemId) {
 
     select.innerHTML = "";
 
+    const currentMember =
+        MemberStorage.get(currentSystemId);
+
+    if (!currentMember) {
+
+        console.error(
+            "Current member not found."
+        );
+
+        return;
+
+    }
+
     const members =
-        FamilyStorage.getFamily(familyId);
+        FamilyStorage.getFamily(
+            currentMember.familyId
+        );
+
+    if (!members || !members.length) {
+
+        console.error(
+            "Family members not found."
+        );
+
+        return;
+
+    }
 
     members.forEach(function (member) {
 
         if (
             member.systemId === currentSystemId
         ) {
+
             return;
+
         }
 
         if (
             member.status &&
             member.status !== "active"
         ) {
+
             return;
+
         }
 
         const option =
@@ -2130,75 +1897,123 @@ function initRelationshipEvents() {
 
     if (saveBtn) {
 
-        saveBtn.onclick = function () {
+        saveBtn.addEventListener(
+            "click",
+            function () {
 
-            const memberId =
-                document.getElementById(
-                    "relationshipMemberId"
-                ).value;
+                const memberId =
+                    document.getElementById(
+                        "relationshipMemberId"
+                    ).value;
 
-            const relatedMemberId =
-                document.getElementById(
-                    "relatedMemberSelect"
-                ).value;
+                const relatedMemberId =
+                    document.getElementById(
+                        "relatedMemberSelect"
+                    ).value;
 
-            const relationshipType =
+                const relationshipType =
+                    document.getElementById(
+                        "relationshipType"
+                    ).value;
+
+                if (!memberId) {
+
+                    showMessage(
+                        "Member not selected.",
+                        "error"
+                    );
+
+                    return;
+
+                }
+
+                if (!relatedMemberId) {
+
+                    showMessage(
+                        "Select related member.",
+                        "error"
+                    );
+
+                    return;
+
+                }
+
+                if (!relationshipType) {
+
+                    showMessage(
+                        "Select relationship type.",
+                        "error"
+                    );
+
+                    return;
+
+                }
+
+                const currentMember =
+                    MemberStorage.get(
+                        memberId
+                    );
+
+                if (!currentMember) {
+
+                    showMessage(
+                        "Member not found.",
+                        "error"
+                    );
+
+                    return;
+
+                }
+
+                const result =
+                    RelationshipStorage.addRelationship({
+
+                        familyId:
+                            currentMember.familyId,
+
+                        memberId:
+                            memberId,
+
+                        relatedMemberId:
+                            relatedMemberId,
+
+                        relationshipType:
+                            relationshipType
+
+                    });
+
+                if (!result.success) {
+
+                    showMessage(
+                        result.message,
+                        "error"
+                    );
+
+                    return;
+
+                }
+
+                const modal = document.getElementById(
+                    "relationshipModal"
+                );
+                modal.classList.add("hidden");
+                modal.style.display = "none";
+                modal.style.visibility = "hidden";
+                modal.style.opacity = "0";
+
                 document.getElementById(
                     "relationshipType"
-                ).value;
+                ).value = "";
 
-            if (!relatedMemberId) {
+                loadFamily();
 
-                alert(
-                    "Please select related member."
+                showMessage(
+                    "Relationship added successfully.",
+                    "success"
                 );
 
-                return;
-
             }
-
-            if (!relationshipType) {
-
-                alert(
-                    "Please select relationship."
-                );
-
-                return;
-
-            }
-
-            const result =
-                RelationshipStorage.addRelationship({
-
-                    familyId:
-                        familyId,
-
-                    memberId:
-                        memberId,
-
-                    relatedMemberId:
-                        relatedMemberId,
-
-                    relationshipType:
-                        relationshipType
-
-                });
-
-            if (!result.success) {
-
-                alert(result.message);
-
-                return;
-
-            }
-
-            document.getElementById(
-                "relationshipModal"
-            ).style.display = "none";
-
-            loadFamily();
-
-        };
+        );
 
     }
 
@@ -2209,13 +2024,20 @@ function initRelationshipEvents() {
 
     if (closeBtn) {
 
-        closeBtn.onclick = function () {
+        closeBtn.addEventListener(
+            "click",
+            function () {
 
-            document.getElementById(
-                "relationshipModal"
-            ).style.display = "none";
+                const modal = document.getElementById(
+                    "relationshipModal"
+                );
+                modal.classList.add("hidden");
+                modal.style.display = "none";
+                modal.style.visibility = "hidden";
+                modal.style.opacity = "0";
 
-        };
+            }
+        );
 
     }
 

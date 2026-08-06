@@ -3,6 +3,7 @@
 Introspect - Family Storage Module
 Version : RC-2 v1.0
 Purpose : Manage Family Relationships
+Responsibility: Maintains family aggregate data and synchronized member snapshots.
 =========================================================
 */
 
@@ -179,6 +180,11 @@ function updateFamilyMetadata(
 
 }
 
+    /**
+     * Adds a member snapshot to the family array.
+     * @private
+     * @internal This method is for internal synchronization only and must be invoked solely by the FamilyService coordination layer.
+     */
     function addMember(familyId, member) {
 
         const data = load();
@@ -209,6 +215,11 @@ function updateFamilyMetadata(
 
     }
 
+    /**
+     * Removes a member snapshot from the family array.
+     * @private
+     * @internal This method is for internal synchronization only and must be invoked solely by the FamilyService coordination layer.
+     */
     function removeMember(familyId, username) {
 
         const data = load();
@@ -223,6 +234,11 @@ function updateFamilyMetadata(
 
     }
 
+    /**
+     * Updates a member snapshot within the family array.
+     * @private
+     * @internal This method is for internal synchronization only and must be invoked solely by the FamilyService coordination layer.
+     */
     function updateMember(
         familyId,
         username,
@@ -279,6 +295,10 @@ function updateFamilyMetadata(
 
     }
 
+    /**
+     * Retrieves spouse.
+     * @deprecated Deprecated in RC-2. Direct relationship properties on member snapshots are legacy; use RelationshipStorage graph queries instead.
+     */
     function getSpouse(username) {
 
         const result = findMember(username);
@@ -294,6 +314,10 @@ function updateFamilyMetadata(
 
     }
 
+    /**
+     * Retrieves children.
+     * @deprecated Deprecated in RC-2. Direct relationship properties on member snapshots are legacy; use RelationshipStorage graph queries instead.
+     */
     function getChildren(username) {
 
         const result = findMember(username);

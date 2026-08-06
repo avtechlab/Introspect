@@ -3,6 +3,7 @@
 Introspect - Member Storage Module
 Version : RC-2 v1.0
 Purpose : Manage Member Profiles
+Canonical Owner: Member Profile Subsystem (Canonical owner of individual profile records)
 =========================================================
 */
 
@@ -27,6 +28,11 @@ const MemberStorage = (() => {
 
     }
 
+    /**
+     * Adds a canonical member profile record.
+     * @canonical
+     * @owned Fields: username, systemId, name, age, gender, isHead, status, createdAt
+     */
     function add(member) {
 
     const data = load();
@@ -63,6 +69,11 @@ const MemberStorage = (() => {
 
     }
 
+    /**
+     * Updates a canonical member profile record.
+     * @canonical
+     * @owned Fields: name, age, gender, isHead, status, systemId
+     */
     function update(username, updates) {
 
         const data = load();
